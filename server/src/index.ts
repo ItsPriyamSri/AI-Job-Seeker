@@ -2,16 +2,20 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import path from "path";
 import env from "./config/env";
 import connectDB from "./config/db";
 import healthRouter from "./routes/health.routes";
 import authRouter from "./routes/auth.routes";
+import profileRouter from "./routes/profile.routes";
 import errorHandler from "./middleware/errorHandler";
 
 const app = express();
 
 // Set security headers
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: false, // Allow loading local files in frontend
+}));
 
 // Enable CORS
 app.use(
@@ -40,9 +44,13 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
+// Serve uploads static folder
+app.use("/uploads", express.static(path.join(__dirname, "../../uploads")));
+
 // Register routes
 app.use("/api", healthRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/profile", profileRouter);
 
 // Centralized error handling
 app.use(errorHandler);

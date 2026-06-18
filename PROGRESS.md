@@ -20,3 +20,11 @@ This file serves as a running chronological log of our build phases, decisions m
 - **Middlewares:** Built Zod validation middleware for request bodies, secure route guard verification middleware (`protect`), and role-based path authorization (`authorize`).
 - **UI screens:** Created `AuthPage` including custom seeker/recruiter role cards and single-digit OTP verification box. Integrated Zustand authentication store in client.
 - **Gate Check:** Ran compilation and verification tests. Both client and server build cleanly. Account signup, OTP verification, and JWT session persistence verified via HTTP client. Protected endpoint rejects without JWT token.
+
+## [2026-06-18] Phase 3: Profile & Resume Parsing
+- **Profile Model:** Implemented `SeekerProfile` mongoose model with complete fields for education, skills, projects, experience, preferences, and embedding storage.
+- **Upload Middleware & Service:** Configured Multer memory storage and created file upload service with fallback to local workspace storage (`/uploads/resumes/`) if Cloudinary credentials are omitted. Configure express static serving for local files.
+- **Structured AI Resume Parser:** Integrated Gemini structured outputs via `@google/genai` library and created a heuristics-based keyword matching mock resume parser as fallback.
+- **Mock Embedding Generator:** Engineered a deterministic 768-dimensional mock embedding generator based on common developer keyword indexing to power semantic matching in future phases.
+- **UI Screens:** Implemented `OnboardingPage` with resume drag-and-drop zone, skeleton parsing loader, and full profile review form synced with a completeness percentage bar.
+- **Gate Check:** Compilation passes on both apps. Resume parser and update profile API smoke checks successfully executed with sample developer resumes.

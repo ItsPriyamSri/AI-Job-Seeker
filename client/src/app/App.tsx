@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } f
 import { Briefcase, FileText, CheckSquare, User, Compass, LogOut } from "lucide-react";
 import Providers from "./providers";
 import AuthPage from "../pages/AuthPage";
+import OnboardingPage from "../pages/OnboardingPage";
 import useAuthStore from "../store/auth.store";
 import useAuth from "../features/useAuth";
 
@@ -293,7 +294,7 @@ export const AppContent = () => {
           path="/profile"
           element={
             <ProtectedRoute allowedRole="seeker">
-              <div className="p-8 text-center bg-white border border-border rounded-card">Profile Screen (Coming soon)</div>
+              <OnboardingPage />
             </ProtectedRoute>
           }
         />

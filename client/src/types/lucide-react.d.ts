@@ -12,6 +12,11 @@ declare module 'lucide-react' {
   export const User: Icon;
   export const Compass: Icon;
   export const LogOut: Icon;
+  export const Plus: Icon;
+  export const X: Icon;
+  export const Upload: Icon;
+  export const Sparkles: Icon;
+  export const AlertCircle: Icon;
   // Fallback for any other icons imported
   const content: any;
   export default content;

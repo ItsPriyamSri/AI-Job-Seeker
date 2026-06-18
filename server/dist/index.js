@@ -7,14 +7,18 @@ const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const helmet_1 = __importDefault(require("helmet"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
+const path_1 = __importDefault(require("path"));
 const env_1 = __importDefault(require("./config/env"));
 const db_1 = __importDefault(require("./config/db"));
 const health_routes_1 = __importDefault(require("./routes/health.routes"));
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
+const profile_routes_1 = __importDefault(require("./routes/profile.routes"));
 const errorHandler_1 = __importDefault(require("./middleware/errorHandler"));
 const app = (0, express_1.default)();
 // Set security headers
-app.use((0, helmet_1.default)());
+app.use((0, helmet_1.default)({
+    crossOriginResourcePolicy: false, // Allow loading local files in frontend
+}));
 // Enable CORS
 app.use((0, cors_1.default)({
     origin: env_1.default.CLIENT_URL,
@@ -37,9 +41,12 @@ const limiter = (0, express_rate_limit_1.default)({
     },
 });
 app.use(limiter);
+// Serve uploads static folder
+app.use("/uploads", express_1.default.static(path_1.default.join(__dirname, "../../uploads")));
 // Register routes
 app.use("/api", health_routes_1.default);
 app.use("/api/auth", auth_routes_1.default);
+app.use("/api/profile", profile_routes_1.default);
 // Centralized error handling
 app.use(errorHandler_1.default);
 // Connect database and start server
