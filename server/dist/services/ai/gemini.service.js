@@ -168,6 +168,9 @@ const parseResumeText = async (text) => {
     }
 };
 exports.parseResumeText = parseResumeText;
+const escapeRegExp = (string) => {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+};
 /**
  * Heuristics-based mock resume parser
  */
@@ -177,7 +180,8 @@ const runMockResumeParser = (text) => {
     const skills = [];
     COMMON_KEYWORDS.slice(0, 50).forEach((keyword) => {
         // Search with word boundary to avoid partial matching
-        const regex = new RegExp(`\\b${keyword}\\b`, "i");
+        const escaped = escapeRegExp(keyword);
+        const regex = new RegExp(`\\b${escaped}\\b`, "i");
         if (regex.test(text)) {
             // Capitalize first letters properly
             const formatted = keyword.split(".").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(".");

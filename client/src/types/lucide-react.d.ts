@@ -17,6 +17,18 @@ declare module 'lucide-react' {
   export const Upload: Icon;
   export const Sparkles: Icon;
   export const AlertCircle: Icon;
+  export const Search: Icon;
+  export const MapPin: Icon;
+  export const Globe: Icon;
+  export const ArrowRight: Icon;
+  export const Calendar: Icon;
+  export const Users: Icon;
+  export const Download: Icon;
+  export const ExternalLink: Icon;
+  export const RefreshCw: Icon;
+  export const Trash2: Icon;
+  export const ArrowLeft: Icon;
+  export const Loader2: Icon;
   // Fallback for any other icons imported
   const content: any;
   export default content;

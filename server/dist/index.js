@@ -13,6 +13,7 @@ const db_1 = __importDefault(require("./config/db"));
 const health_routes_1 = __importDefault(require("./routes/health.routes"));
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const profile_routes_1 = __importDefault(require("./routes/profile.routes"));
+const job_routes_1 = __importDefault(require("./routes/job.routes"));
 const errorHandler_1 = __importDefault(require("./middleware/errorHandler"));
 const app = (0, express_1.default)();
 // Set security headers
@@ -47,6 +48,7 @@ app.use("/uploads", express_1.default.static(path_1.default.join(__dirname, "../
 app.use("/api", health_routes_1.default);
 app.use("/api/auth", auth_routes_1.default);
 app.use("/api/profile", profile_routes_1.default);
+app.use("/api/jobs", job_routes_1.default);
 // Centralized error handling
 app.use(errorHandler_1.default);
 // Connect database and start server

@@ -28,3 +28,10 @@ This file serves as a running chronological log of our build phases, decisions m
 - **Mock Embedding Generator:** Engineered a deterministic 768-dimensional mock embedding generator based on common developer keyword indexing to power semantic matching in future phases.
 - **UI Screens:** Implemented `OnboardingPage` with resume drag-and-drop zone, skeleton parsing loader, and full profile review form synced with a completeness percentage bar.
 - **Gate Check:** Compilation passes on both apps. Resume parser and update profile API smoke checks successfully executed with sample developer resumes.
+
+## [2026-06-18] Phase 4: Jobs & Recruiter Posting
+- **Job Model:** Designed and created Mongoose schema for `Job` entity, containing title, requirements, skills, location, workMode, type, source (internal vs external), external URL, and embedding array.
+- **Service & API Endpoints:** Developed `getJobs` query handler with keyword text search and filters for location, workMode, and type, with full offset pagination support. Restricted create/edit/delete endpoints to recruiter role.
+- **DB Seeding Script:** Authored database seeder creating seeker/recruiter demo accounts and populating 30 realistic, high-fidelity tech jobs with pre-calculated mock embeddings.
+- **UI Screens:** Implemented responsive `BrowseJobsPage` featuring live filter updates, paginated tables, and details overlay drawers with internal/external apply directions.
+- **Gate Check:** Script executes successfully. GET /jobs returns 30 seeded jobs with fully functional search/filter queries. All TypeScript compilation passes.

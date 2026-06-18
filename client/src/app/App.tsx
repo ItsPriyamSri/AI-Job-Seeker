@@ -4,6 +4,11 @@ import { Briefcase, FileText, CheckSquare, User, Compass, LogOut } from "lucide-
 import Providers from "./providers";
 import AuthPage from "../pages/AuthPage";
 import OnboardingPage from "../pages/OnboardingPage";
+import BrowseJobsPage from "../pages/BrowseJobsPage";
+import DashboardPage from "../pages/DashboardPage";
+import ApplicationsPage from "../pages/ApplicationsPage";
+import RecruiterDashboardPage from "../pages/RecruiterDashboardPage";
+import RecruiterJobsPage from "../pages/RecruiterJobsPage";
 import useAuthStore from "../store/auth.store";
 import useAuth from "../features/useAuth";
 
@@ -66,58 +71,9 @@ const LandingScreen = () => {
   );
 };
 
-const DashboardScreen = () => {
-  const { user } = useAuthStore();
-  return (
-    <div className="space-y-6">
-      <h2 className="text-2xl md:text-3xl font-display text-ink">Welcome back, {user?.name || "Seeker"}!</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="p-6 bg-white rounded-card border border-border shadow-card hover:shadow-card-hover transition-all">
-          <span className="text-sm text-text-muted font-medium uppercase tracking-wider">Match-ready jobs</span>
-          <div className="mt-2 text-4xl font-mono font-semibold text-indigo">12</div>
-        </div>
-        <div className="p-6 bg-white rounded-card border border-border shadow-card hover:shadow-card-hover transition-all">
-          <span className="text-sm text-text-muted font-medium uppercase tracking-wider">Applications sent</span>
-          <div className="mt-2 text-4xl font-mono font-semibold text-emerald">4</div>
-        </div>
-        <div className="p-6 bg-white rounded-card border border-border shadow-card hover:shadow-card-hover transition-all">
-          <span className="text-sm text-text-muted font-medium uppercase tracking-wider">Response rate</span>
-          <div className="mt-2 text-4xl font-mono font-semibold text-amber">75%</div>
-        </div>
-      </div>
-      <div className="p-8 bg-coral-tint border border-coral/20 rounded-card flex flex-col md:flex-row gap-6 items-center">
-        <div className="w-16 h-16 rounded-full bg-coral/10 flex items-center justify-center text-coral text-2xl font-bold">AI</div>
-        <div>
-          <h3 className="text-lg font-bold text-ink">Complete your profile to unlock recommendations</h3>
-          <p className="text-text-muted mt-1 text-sm">Upload your resume and let Gemini parse your skills, education, and experience.</p>
-        </div>
-        <Link to="/profile" className="md:ml-auto px-6 py-2.5 bg-indigo text-white text-sm font-medium rounded-button hover:bg-opacity-90">
-          Update Profile
-        </Link>
-      </div>
-    </div>
-  );
-};
 
-const RecruiterDashboardScreen = () => {
-  const { user } = useAuthStore();
-  return (
-    <div className="space-y-6">
-      <h2 className="text-2xl md:text-3xl font-display text-ink">Recruiter Dashboard</h2>
-      <p className="text-text-muted">Welcome to the Recruiter Portal, {user?.name}. Here you can post job openings and review candidates.</p>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="p-6 bg-white rounded-card border border-border shadow-card">
-          <span className="text-sm text-text-muted font-medium uppercase tracking-wider">Active Postings</span>
-          <div className="mt-2 text-4xl font-mono font-semibold text-indigo">0</div>
-        </div>
-        <div className="p-6 bg-white rounded-card border border-border shadow-card">
-          <span className="text-sm text-text-muted font-medium uppercase tracking-wider">Total Applicants</span>
-          <div className="mt-2 text-4xl font-mono font-semibold text-emerald">0</div>
-        </div>
-      </div>
-    </div>
-  );
-};
+
+// Mock Recruiter screen removed, now using RecruiterDashboardPage.
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
@@ -262,7 +218,7 @@ export const AppContent = () => {
           path="/dashboard"
           element={
             <ProtectedRoute allowedRole="seeker">
-              <DashboardScreen />
+              <DashboardPage />
             </ProtectedRoute>
           }
         />
@@ -270,7 +226,7 @@ export const AppContent = () => {
           path="/jobs"
           element={
             <ProtectedRoute allowedRole="seeker">
-              <div className="p-8 text-center bg-white border border-border rounded-card">Browse Jobs Screen (Coming soon)</div>
+              <BrowseJobsPage />
             </ProtectedRoute>
           }
         />
@@ -286,7 +242,7 @@ export const AppContent = () => {
           path="/applications"
           element={
             <ProtectedRoute allowedRole="seeker">
-              <div className="p-8 text-center bg-white border border-border rounded-card">Applications Screen (Coming soon)</div>
+              <ApplicationsPage />
             </ProtectedRoute>
           }
         />
@@ -304,7 +260,7 @@ export const AppContent = () => {
           path="/recruiter/dashboard"
           element={
             <ProtectedRoute allowedRole="recruiter">
-              <RecruiterDashboardScreen />
+              <RecruiterDashboardPage />
             </ProtectedRoute>
           }
         />
@@ -312,7 +268,7 @@ export const AppContent = () => {
           path="/recruiter/jobs"
           element={
             <ProtectedRoute allowedRole="recruiter">
-              <div className="p-8 text-center bg-white border border-border rounded-card">Recruiter Jobs Screen (Coming soon)</div>
+              <RecruiterJobsPage />
             </ProtectedRoute>
           }
         />

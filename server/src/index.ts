@@ -8,6 +8,10 @@ import connectDB from "./config/db";
 import healthRouter from "./routes/health.routes";
 import authRouter from "./routes/auth.routes";
 import profileRouter from "./routes/profile.routes";
+import jobRouter from "./routes/job.routes";
+import recommendationRouter from "./routes/recommendation.routes";
+import applicationRouter from "./routes/application.routes";
+import savedJobRouter from "./routes/savedJob.routes";
 import errorHandler from "./middleware/errorHandler";
 
 const app = express();
@@ -51,6 +55,10 @@ app.use("/uploads", express.static(path.join(__dirname, "../../uploads")));
 app.use("/api", healthRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/profile", profileRouter);
+app.use("/api/jobs", jobRouter);
+app.use("/api/recommendations", recommendationRouter);
+app.use("/api/applications", applicationRouter);
+app.use("/api/saved", savedJobRouter);
 
 // Centralized error handling
 app.use(errorHandler);
