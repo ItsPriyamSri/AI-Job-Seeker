@@ -13,3 +13,10 @@ This file serves as a running chronological log of our build phases, decisions m
   - `GEMINI_API_KEY`: Missing.
   - `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET`: Missing.
   - `SMTP_HOST` / `SMTP_USER` / `SMTP_PASS`: Missing.
+
+## [2026-06-18] Phase 2: Authentication
+- **User & OTP Models:** Implemented mongoose models for `User` and `OtpToken` with TTL indexing (5 minutes).
+- **Service Layer:** Created `auth.service` handling register, OTP code delivery (via console log fallback in local development), OTP verification, and password validation with bcrypt.
+- **Middlewares:** Built Zod validation middleware for request bodies, secure route guard verification middleware (`protect`), and role-based path authorization (`authorize`).
+- **UI screens:** Created `AuthPage` including custom seeker/recruiter role cards and single-digit OTP verification box. Integrated Zustand authentication store in client.
+- **Gate Check:** Ran compilation and verification tests. Both client and server build cleanly. Account signup, OTP verification, and JWT session persistence verified via HTTP client. Protected endpoint rejects without JWT token.
