@@ -163,3 +163,4 @@ server/uploads/
 *.temp
 .vercel
 .netlify
+/.agents
