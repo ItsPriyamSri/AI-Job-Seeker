@@ -9,6 +9,8 @@ import DashboardPage from "../pages/DashboardPage";
 import ApplicationsPage from "../pages/ApplicationsPage";
 import RecruiterDashboardPage from "../pages/RecruiterDashboardPage";
 import RecruiterJobsPage from "../pages/RecruiterJobsPage";
+import ResumeAnalyzerPage from "../pages/ResumeAnalyzerPage";
+import SkillGapPage from "../pages/SkillGapPage";
 import useAuthStore from "../store/auth.store";
 import useAuth from "../features/useAuth";
 
@@ -234,7 +236,15 @@ export const AppContent = () => {
           path="/resume"
           element={
             <ProtectedRoute allowedRole="seeker">
-              <div className="p-8 text-center bg-white border border-border rounded-card">Resume Analyzer Screen (Coming soon)</div>
+              <ResumeAnalyzerPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/jobs/:id/gap"
+          element={
+            <ProtectedRoute allowedRole="seeker">
+              <SkillGapPage />
             </ProtectedRoute>
           }
         />

@@ -1,8 +1,10 @@
-import React from "react";
-import { MapPin, Globe, ArrowRight } from "lucide-react";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { MapPin, Globe, ArrowRight, Loader2 } from "lucide-react";
 import { Job } from "../../features/useJobs";
 import { MatchBreakdown } from "../../features/useRecommendations";
 import { MatchRing } from "../match-ring/MatchRing";
+import useApplications from "../../features/useApplications";
 
 interface JobDetailsDrawerProps {
   job: Job;
@@ -15,9 +17,24 @@ export const JobDetailsDrawer: React.FC<JobDetailsDrawerProps> = ({
   match,
   onClose,
 }) => {
+  const { useApplyToJob } = useApplications();
+  const applyMutation = useApplyToJob();
+  const [applySuccess, setApplySuccess] = useState(false);
+
   const totalSkills = match ? match.matchedSkills.length + match.missingSkills.length : 0;
   const matchedSkillsCount = match ? match.matchedSkills.length : 0;
   const missingSkillsCount = match ? match.missingSkills.length : 0;
+
+  const handleApply = async () => {
+    try {
+      const res = await applyMutation.mutateAsync({ jobId: job._id });
+      if (res?.success) {
+        setApplySuccess(true);
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.error?.message || "Failed to submit application");
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 bg-ink/30 backdrop-blur-sm flex items-center justify-end p-4">
@@ -77,9 +94,18 @@ export const JobDetailsDrawer: React.FC<JobDetailsDrawerProps> = ({
                     ))}
                   </div>
                   {missingSkillsCount > 0 ? (
-                    <p className="text-xs text-amber-600 font-medium">
-                      Add {missingSkillsCount} skill{missingSkillsCount > 1 ? "s" : ""} to reach a 100% match score!
-                    </p>
+                    <div className="space-y-1.5 pt-1">
+                      <p className="text-xs text-amber-600 font-medium">
+                        Add {missingSkillsCount} skill{missingSkillsCount > 1 ? "s" : ""} to reach a 100% match score!
+                      </p>
+                      <Link
+                        to={`/jobs/${job._id}/gap`}
+                        onClick={onClose}
+                        className="text-xs text-indigo hover:underline font-bold inline-flex items-center gap-1"
+                      >
+                        Analyze Skill Gap & Learning Path <ArrowRight size={12} />
+                      </Link>
+                    </div>
                   ) : (
                     <p className="text-xs text-emerald-600 font-medium">
                       Perfect technical skill match!
@@ -170,12 +196,23 @@ export const JobDetailsDrawer: React.FC<JobDetailsDrawerProps> = ({
           ) : (
             <button
               type="button"
-              onClick={() => {
-                alert(`One-click apply for internal job: "${job.title}" is implemented in Phase 6. Coming next!`);
-              }}
-              className="flex-1 py-3 bg-indigo text-white font-medium rounded-button text-sm hover:bg-opacity-95 active:scale-98 transition-all min-h-[44px]"
+              onClick={handleApply}
+              disabled={applyMutation.isPending || applySuccess}
+              className={`flex-1 py-3 font-medium rounded-button text-sm active:scale-98 transition-all min-h-[44px] flex items-center justify-center gap-2 ${
+                applySuccess
+                  ? "bg-emerald text-white cursor-default"
+                  : "bg-indigo text-white hover:bg-opacity-95 disabled:opacity-50"
+              }`}
             >
-              One-Click Apply
+              {applyMutation.isPending ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" /> Submitting...
+                </>
+              ) : applySuccess ? (
+                <>Applied ✓</>
+              ) : (
+                <>One-Click Apply</>
+              )}
             </button>
           )}
         </div>

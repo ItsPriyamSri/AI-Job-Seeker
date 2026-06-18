@@ -1,5 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import env from "../../config/env";
+import { ISeekerProfile } from "../../models/profile.model";
+import { IJob } from "../../models/job.model";
 
 const isGeminiConfigured = !!env.GEMINI_API_KEY;
 
@@ -309,4 +311,314 @@ export const generateText = async (prompt: string, mockResponse: string): Promis
     console.error("❌ [AI SERVICE] Gemini text generation error:", error);
     return mockResponse;
   }
+};
+
+export interface AtsSuggestion {
+  icon: string;
+  title: string;
+  why: string;
+  impact: "high" | "medium" | "low";
+}
+
+export interface AtsResult {
+  score: number;
+  suggestions: AtsSuggestion[];
+}
+
+/**
+ * Calculates ATS Resume Score and provides suggestions.
+ */
+export const getAtsScore = async (
+  profile: ISeekerProfile,
+  userEmail: string
+): Promise<AtsResult> => {
+  const resumeText = profile.resumeText || "";
+
+  if (isGeminiConfigured && ai && resumeText.trim()) {
+    try {
+      const prompt = `
+        You are a professional ATS scanner. Analyze the following resume text and score it from 0 to 100.
+        Also provide 3-5 specific, highly actionable improvements as JSON.
+        Resume:
+        ${resumeText}
+      `;
+
+      const responseSchema = {
+        type: "OBJECT",
+        properties: {
+          score: { type: "INTEGER", description: "ATS score from 0 to 100" },
+          suggestions: {
+            type: "ARRAY",
+            items: {
+              type: "OBJECT",
+              properties: {
+                icon: { type: "STRING", description: "Name of an icon: Award, Briefcase, FileText, User, or Check" },
+                title: { type: "STRING", description: "Short actionable improvement title" },
+                why: { type: "STRING", description: "Why this helps the resume score" },
+                impact: { type: "STRING", description: "high, medium, or low" }
+              },
+              required: ["icon", "title", "why", "impact"]
+            }
+          }
+        },
+        required: ["score", "suggestions"]
+      };
+
+      const response = await ai.models.generateContent({
+        model: MODELS.text,
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: responseSchema as any
+        }
+      });
+
+      return JSON.parse(response.text || "{}") as AtsResult;
+    } catch (error) {
+      console.error("❌ [AI SERVICE] ATS Resume scoring error:", error);
+    }
+  }
+
+  // High-fidelity fallback heuristic scorer
+  const suggestions: AtsSuggestion[] = [];
+  let score = 40;
+
+  if (!profile.education || profile.education.length === 0) {
+    suggestions.push({
+      icon: "Award",
+      title: "Add education history",
+      why: "Academic backgrounds validate your foundation. Add graduation details.",
+      impact: "high",
+    });
+  } else {
+    score += 15;
+  }
+
+  if (!profile.skills || profile.skills.length === 0) {
+    suggestions.push({
+      icon: "Sparkles",
+      title: "Add tech keywords in Skills",
+      why: "ATS search indexes look directly for skill tags like React or Python.",
+      impact: "high",
+    });
+  } else {
+    score += 15;
+    if (profile.skills.length < 5) {
+      suggestions.push({
+        icon: "Check",
+        title: "Expand skills lists",
+        why: "We recommend adding at least 8-10 specific framework/tool keywords.",
+        impact: "medium",
+      });
+      score += 5;
+    } else {
+      score += 10;
+    }
+  }
+
+  if (!profile.projects || profile.projects.length === 0) {
+    suggestions.push({
+      icon: "Briefcase",
+      title: "Add developer projects",
+      why: "Hands-on projects demonstrate capability and cover crucial technology keywords.",
+      impact: "high",
+    });
+  } else {
+    score += 15;
+  }
+
+  if (!profile.experience || profile.experience.length === 0) {
+    suggestions.push({
+      icon: "User",
+      title: "Add work or internship history",
+      why: "Internships, freelance work, or open source shows workplace collaboration.",
+      impact: "medium",
+    });
+  } else {
+    score += 15;
+  }
+
+  // General ATS tips
+  suggestions.push({
+    icon: "Check",
+    title: "Quantify achievements in project descriptions",
+    why: "Adding metrics (e.g. 'improved speed by 25%') increases resume readability.",
+    impact: "high",
+  });
+
+  return {
+    score: Math.min(100, score),
+    suggestions: suggestions.slice(0, 5),
+  };
+};
+
+export interface SkillGapItem {
+  skill: string;
+  resource: string;
+  lift: number;
+}
+
+/**
+ * Calculates missing skills vs target job requirements and suggests resources.
+ */
+export const getSkillGapAnalysis = async (
+  profile: ISeekerProfile,
+  job: IJob
+): Promise<SkillGapItem[]> => {
+  const jobSkills = job.skills || [];
+  const profileSkills = (profile.skills || []).map((s) => s.toLowerCase().trim());
+
+  // Determine missing skills
+  const missingSkills = jobSkills.filter(
+    (skill) => !profileSkills.some(
+      (ps) => ps === skill.toLowerCase().trim() || ps.includes(skill.toLowerCase().trim()) || skill.toLowerCase().trim().includes(ps)
+    )
+  );
+
+  const liftPerSkill = jobSkills.length > 0 ? Math.round(35 / jobSkills.length) : 5;
+
+  const defaultResources: { [key: string]: string } = {
+    react: "React Official documentation (react.dev) - Build Tic-Tac-Toe tutorial.",
+    node: "Node.js Learning Path - Express framework documentation.",
+    typescript: "TypeScript Deep Dive online book by Basarat.",
+    mongodb: "MongoDB University - M001 Database Basics Course.",
+    express: "Express.js official getting started guide.",
+    docker: "Docker curriculum (docker-curriculum.com) - Containers for beginners.",
+    kubernetes: "Kubernetes Basics interactive tutorial on kubernetes.io.",
+    aws: "AWS Certified Cloud Practitioner - Free training course on AWS Skill Builder.",
+    postgresql: "PostgreSQL Tutorial (postgresqltutorial.com) - Relational DB basics.",
+    python: "Python for Beginners on freeCodeCamp.",
+    git: "Git Immersion tutorial (gitimmersion.com)."
+  };
+
+  const gapAnalysis: SkillGapItem[] = missingSkills.map((skill) => {
+    const key = skill.toLowerCase().trim();
+    const resource = defaultResources[key] || `Free courses for ${skill} on YouTube and Coursera.`;
+    return {
+      skill,
+      resource,
+      lift: liftPerSkill,
+    };
+  });
+
+  return gapAnalysis;
+};
+
+/**
+ * Tailors a cover letter based on seeker profile and target job description.
+ */
+export const generateCoverLetter = async (
+  profile: ISeekerProfile,
+  job: IJob,
+  userName: string
+): Promise<string> => {
+  const skillsList = profile.skills ? profile.skills.slice(0, 4).join(", ") : "";
+  const projectsList = profile.projects ? profile.projects.map((p) => p.title).join(", ") : "";
+
+  const prompt = `
+    You are a professional cover letter writer. Draft an engaging, professional cover letter (under 250 words) for a seeker applying to a job.
+    Seeker Name: ${userName}
+    Seeker Skills: ${profile.skills?.join(", ")}
+    Seeker Projects: ${profile.projects?.map((p) => `${p.title}: ${p.description}`).join("; ")}
+    Job Title: ${job.title}
+    Company: ${job.company}
+    Job Description: ${job.description}
+    Keep it encouraging and fit for a fresher.
+  `;
+
+  const fallbackLetter = `Dear Hiring Team at ${job.company},
+
+I am writing to express my enthusiastic interest in the ${job.title} position at your company. As a graduate with a solid foundation in software development and practical skills in ${skillsList || "computer science"}, I am eager to contribute my capabilities to your engineering division.
+
+During my studies, I have successfully engineered projects such as ${projectsList || "web interfaces"}, which allowed me to solve complex algorithmic issues and learn modern developer frameworks. I am highly motivated by ${job.company}'s work and feel confident my skills align well with the expectations for this role.
+
+Thank you for your time and consideration. I look forward to the opportunity to discuss my qualifications further.
+
+Sincerely,
+${userName}`;
+
+  return generateText(prompt, fallbackLetter);
+};
+
+// LaTeX character escaper helper
+const escapeLatex = (text: string): string => {
+  if (!text) return "";
+  return text
+    .replace(/\\/g, "\\textbackslash{}")
+    .replace(/&/g, "\\&")
+    .replace(/%/g, "\\%")
+    .replace(/\$/g, "\\$")
+    .replace(/#/g, "\\#")
+    .replace(/_/g, "\\_")
+    .replace(/{/g, "\\{")
+    .replace(/}/g, "\\}")
+    .replace(/~/g, "\\textasciitilde{}")
+    .replace(/\^/g, "\\textasciicircum{}");
+};
+
+/**
+ * Renders seeker profile into a valid, compileable LaTeX resume string.
+ */
+export const generateLatexResume = (
+  profile: ISeekerProfile,
+  userEmail: string,
+  userName: string
+): string => {
+  const name = escapeLatex(userName);
+  const email = escapeLatex(userEmail);
+
+  // 1. Education LaTeX block
+  const eduItems = (profile.education || []).map((edu) => `
+\\noindent \\textbf{${escapeLatex(edu.degree)}} \\hfill ${edu.year} \\\\
+\\textit{${escapeLatex(edu.institution)}} \\\\
+  `).join("\n");
+
+  // 2. Skills LaTeX block
+  const skillsText = escapeLatex(profile.skills?.join(", ") || "");
+
+  // 3. Projects LaTeX block
+  const projItems = (profile.projects || []).map((p) => `
+\\noindent \\textbf{${escapeLatex(p.title)}} \\hfill \\textit{${escapeLatex(p.tech.join(", "))}} \\\\
+${escapeLatex(p.description)} \\\\
+  `).join("\n");
+
+  // 4. Experience LaTeX block
+  const expItems = (profile.experience || []).map((exp) => `
+\\noindent \\textbf{${escapeLatex(exp.role)}} \\hfill ${exp.durationMonths} months \\\\
+\\textit{${escapeLatex(exp.org)}} \\\\
+${escapeLatex(exp.summary)} \\\\
+  `).join("\n");
+
+  const template = `\\documentclass[10pt,letterpaper]{article}
+\\usepackage[utf8]{inputenc}
+\\usepackage[margin=0.75in]{geometry}
+\\usepackage{titlesec}
+\\usepackage{enumitem}
+
+\\titleformat{\\section}{\\large\\bfseries}{}{0em}{}[\\titlerule]
+\\titlespacing{\\section}{0pt}{10pt}{5pt}
+
+\\begin{document}
+\\begin{center}
+    {\\LARGE\\bfseries ${name}} \\\\
+    \\vspace{2pt}
+    ${email}
+\\end{center}
+
+\\section{Skills}
+\\noindent ${skillsText}
+
+\\section{Education}
+${eduItems || "No education added."}
+
+\\section{Projects}
+${projItems || "No projects added."}
+
+\\section{Experience}
+${expItems || "No work experience."}
+
+\\end{document}
+`;
+
+  return template;
 };

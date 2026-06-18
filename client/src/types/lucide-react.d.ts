@@ -29,6 +29,13 @@ declare module 'lucide-react' {
   export const Trash2: Icon;
   export const ArrowLeft: Icon;
   export const Loader2: Icon;
+  export const Award: Icon;
+  export const CheckCircle2: Icon;
+  export const AlertTriangle: Icon;
+  export const ShieldCheck: Icon;
+  export const BookOpen: Icon;
+  export const ChevronRight: Icon;
+  export const Copy: Icon;
   // Fallback for any other icons imported
   const content: any;
   export default content;
